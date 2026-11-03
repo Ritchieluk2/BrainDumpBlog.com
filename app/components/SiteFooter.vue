@@ -4,7 +4,7 @@
     <nav aria-label="Footer" class="site-footer__nav">
       <NuxtLink to="/why">Why brain dumps?</NuxtLink>
       <NuxtLink to="/about">About</NuxtLink>
-      <NuxtLink to="/settings">Appearance</NuxtLink>
+      <NuxtLink to="/settings">Settings</NuxtLink>
       <NuxtLink to="/styleguide">Styleguide</NuxtLink>
     </nav>
   </footer>

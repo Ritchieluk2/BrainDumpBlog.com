@@ -3,10 +3,12 @@
  * Landing page for the emailed link. Signing in happens when the button is
  * pressed (not on page load), so email scanners that open links can't use them up.
  */
+import type { Profile } from '#shared/types/profile'
+
 useHead({ title: 'Finish signing in' })
 
 const route = useRoute()
-const { fetch: refreshSession } = useUserSession()
+const { fetch: refreshSession, user } = useUserSession()
 const token = computed(() => (typeof route.query.token === 'string' ? route.query.token : ''))
 const status = ref<'ready' | 'working' | 'error'>(token.value ? 'ready' : 'error')
 const error = ref(token.value ? '' : 'This sign-in link is missing its code. Request a new one.')
@@ -14,22 +16,28 @@ const error = ref(token.value ? '' : 'This sign-in link is missing its code. Req
 async function finish() {
   status.value = 'working'
   try {
-    await $fetch('/api/auth/verify', { method: 'POST', body: { token: token.value } })
+    const res = await $fetch<{ ok: true; isNew: boolean; profile: Profile }>('/api/auth/verify', { method: 'POST', body: { token: token.value } })
     await refreshSession()
+    if (user.value) applySignedInProfile(user.value.id, res.profile)
 
-    // Save a dump written before signing in, if there is one.
+    // Where to end up: a dump written before signing in, or the page they came from.
+    let next = '/journal'
     const pending = readPending()
     if (pending) {
       const dump = await $fetch('/api/dumps', { method: 'POST', body: pending })
       clearPending()
-      return navigateTo({ path: `/journal/${dump.id}`, query: { fresh: '1' } }, { replace: true })
+      next = `/journal/${dump.id}?fresh=1`
+    } else {
+      try {
+        next = safeNextPath(localStorage.getItem('bd-next')) ?? next
+        localStorage.removeItem('bd-next')
+      } catch { /* ignore */ }
     }
 
-    let next = '/journal'
-    try {
-      next = safeNextPath(localStorage.getItem('bd-next')) ?? next
-      localStorage.removeItem('bd-next')
-    } catch { /* ignore */ }
+    // New here: the welcome comes first, then on to `next`.
+    if (!res.profile.onboarded) {
+      return navigateTo({ path: '/welcome', query: { next } }, { replace: true })
+    }
     return navigateTo(next, { replace: true })
   } catch (err: unknown) {
     error.value = (err as { statusMessage?: string }).statusMessage ?? 'Something went wrong. Please request a new link.'

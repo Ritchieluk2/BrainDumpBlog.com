@@ -4,7 +4,7 @@
  * with an optional ring, moon and soft ground shadow.
  * Renders inside a 100×100 viewBox so it scales to any size.
  */
-import { PLANET_COLORS, type PlanetColor } from '#shared/utils/cosmos'
+import { PLANET_COLORS, type PlanetColor } from '#shared/utils/moods'
 
 const props = withDefaults(defineProps<{
   color?: PlanetColor

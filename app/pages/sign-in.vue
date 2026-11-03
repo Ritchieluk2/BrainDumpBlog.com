@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { MOOD_KEYS } from '#shared/utils/moods'
+
 useHead({ title: 'Sign in' })
 
 const route = useRoute()
@@ -55,10 +57,18 @@ async function submit() {
 
       <button v-else type="button" class="auth__link" @click="status = 'idle'">Use a different email</button>
 
+      <div class="auth__new">
+        <ul class="auth__moods" aria-hidden="true">
+          <li v-for="m in MOOD_KEYS" :key="m"><BdMoodIcon :mood="m" :size="28" /></li>
+        </ul>
+        <p class="bd-muted"><strong>New here?</strong> After your first sign-in, we'll take about a minute to make the journal yours: a color and a shape for each feeling, light or night, and an art style. Or keep the defaults and start writing.</p>
+      </div>
+
       <div v-if="isDev" class="auth__dev">
         <p class="bd-label">Local development only</p>
         <a href="/api/dev/demo-login" class="bd-btn bd-btn--outline bd-btn--small">Open the demo account</a>
         <a href="/api/dev/demo-login?reset=1" class="auth__dev-reset">Reset demo entries to end today</a>
+        <a href="/api/dev/demo-login?welcome=1" class="auth__dev-reset">Try the new-account welcome</a>
       </div>
     </div>
   </div>
@@ -76,6 +86,10 @@ async function submit() {
 }
 .auth__dev .bd-label { width: 100%; }
 .auth__dev-reset { font-size: var(--bd-text-sm); color: var(--bd-ink-2); padding-block: 10px; }
+.auth__new { display: flex; flex-direction: column; gap: var(--bd-space-3); padding: var(--bd-space-4); border-radius: var(--bd-radius-md); background: var(--bd-ground); }
+.auth__new p { font-size: var(--bd-text-sm); line-height: 1.5; }
+.auth__new strong { color: var(--bd-ink); font-weight: 500; }
+.auth__moods { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
 .auth__card { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: var(--bd-space-6); }
 .auth__head { display: flex; flex-direction: column; gap: var(--bd-space-3); }
 .auth__title { font-size: var(--bd-text-2xl); font-weight: 300; letter-spacing: -0.03em; }

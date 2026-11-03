@@ -65,6 +65,16 @@ const MIGRATIONS: string[][] = [
   // 3: topic words saved with each entry, so Insights doesn't re-read every entry's text
   [
     `ALTER TABLE dumps ADD COLUMN topics TEXT`
+  ],
+  // 4: personal touches from the welcome flow: names, look-and-feel (incl. each
+  // feeling's color and shape), and whether the welcome has been finished.
+  // Accounts that existed before count as already welcomed.
+  [
+    `ALTER TABLE users ADD COLUMN display_name TEXT`,
+    `ALTER TABLE users ADD COLUMN journal_name TEXT`,
+    `ALTER TABLE users ADD COLUMN prefs TEXT`,
+    `ALTER TABLE users ADD COLUMN onboarded_at INTEGER`,
+    `UPDATE users SET onboarded_at = created_at`
   ]
 ]
 
@@ -96,6 +106,16 @@ export async function useDb(): Promise<Database> {
 }
 
 export type EntryKind = 'dump' | 'journal'
+
+export interface UserRow {
+  id: string
+  email: string
+  created_at: number
+  display_name: string | null
+  journal_name: string | null
+  prefs: string | null
+  onboarded_at: number | null
+}
 
 export interface ItemRow {
   id: string

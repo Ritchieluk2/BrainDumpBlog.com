@@ -1,39 +1,52 @@
 /**
- * Appearance and art-style preferences, kept in a cookie so the server can
- * render the right theme on first load (no flash), signed in or not.
+ * Appearance, art style, and each feeling's color and shape.
+ *
+ * Kept in a cookie so the server renders the right theme on first load (no
+ * flash), signed in or not. When signed in, changes are also saved to the
+ * account (see plugins/prefs-sync.client.ts).
  */
-import { isArtStyle, type ArtStyle } from '#shared/utils/cosmos-styles'
+import type { ArtStyle } from '#shared/utils/cosmos-styles'
+import type { Mood, MoodLook, MoodMap } from '#shared/utils/moods'
+import { DEFAULT_PREFS, normalizePrefs, type Appearance, type Prefs } from '#shared/utils/prefs'
 
-export type Appearance = 'system' | 'light' | 'dark'
-
-interface Prefs {
-  appearance: Appearance
-  art: ArtStyle
-}
-
-const DEFAULTS: Prefs = { appearance: 'system', art: 'planets' }
-const isAppearance = (v: unknown): v is Appearance => v === 'system' || v === 'light' || v === 'dark'
 
 export function usePreferences() {
   const cookie = useCookie<Partial<Prefs> | null>('bd-prefs', {
-    default: () => ({ ...DEFAULTS }),
+    default: () => ({ ...DEFAULT_PREFS }),
     maxAge: 60 * 60 * 24 * 365,
     sameSite: 'lax'
   })
   // Set on the client from the OS setting (see plugins/system-theme.client.ts)
   const systemDark = useState('bd-system-dark', () => false)
 
+  const all = computed<Prefs>(() => normalizePrefs(cookie.value))
+  const write = (patch: Partial<Prefs>) => { cookie.value = { ...all.value, ...patch } }
+
   const appearance = computed<Appearance>({
-    get: () => (isAppearance(cookie.value?.appearance) ? cookie.value!.appearance! : DEFAULTS.appearance),
-    set: (v) => { cookie.value = { ...DEFAULTS, ...cookie.value, appearance: v } }
+    get: () => all.value.appearance,
+    set: (v) => write({ appearance: v })
   })
 
   const art = computed<ArtStyle>({
-    get: () => (isArtStyle(cookie.value?.art) ? cookie.value!.art! : DEFAULTS.art),
-    set: (v) => { cookie.value = { ...DEFAULTS, ...cookie.value, art: v } }
+    get: () => all.value.art,
+    set: (v) => write({ art: v })
   })
+
+  const moods = computed<MoodMap>({
+    get: () => all.value.moods,
+    set: (v) => write({ moods: v })
+  })
+
+  function setMood(mood: Mood, look: Partial<MoodLook>) {
+    write({ moods: { ...all.value.moods, [mood]: { ...all.value.moods[mood], ...look } } })
+  }
+
+  /** Replace everything at once (used when loading preferences from the account). */
+  function replace(prefs: Prefs) {
+    cookie.value = normalizePrefs(prefs)
+  }
 
   const night = computed(() => appearance.value === 'dark' || (appearance.value === 'system' && systemDark.value))
 
-  return { appearance, art, night, systemDark }
+  return { all, appearance, art, moods, setMood, replace, night, systemDark }
 }

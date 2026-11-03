@@ -3,7 +3,8 @@ import { demoWeek } from '~/data/sampleDumps'
 
 useHead({ title: 'Good morning', titleTemplate: 'Brain Dump · %s' })
 
-const { loggedIn } = useUserSession()
+const { loggedIn, user } = useUserSession()
+const greeting = computed(() => (loggedIn.value && user.value?.name ? `Good morning, ${user.value.name}.` : 'Good morning.'))
 const demo = demoWeek()
 const saving = ref(false)
 const error = ref('')
@@ -46,7 +47,7 @@ async function onSubmit(text: string) {
           <BdSunrise />
           <span>{{ today || ' ' }}</span>
         </p>
-        <h1 class="bd-display">Good morning.<br><span class="bd-serif-italic">Empty your head.</span></h1>
+        <h1 class="bd-display">{{ greeting }}<br><span class="bd-serif-italic">Empty your head.</span></h1>
         <DumpEditor
           :prompt="loggedIn ? 'Write whatever is there.' : 'Write whatever is there. No account needed to start.'"
           :submit-label="saving ? 'Saving…' : 'See today\'s shape'"

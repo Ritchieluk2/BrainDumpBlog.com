@@ -2,7 +2,8 @@
  * Demo entries: used for the homepage illustration and the styleguide,
  * so visitors can see what a week looks like before they've written one.
  */
-import type { GalaxyDay, Mood } from '#shared/utils/cosmos'
+import type { GalaxyDay } from '#shared/utils/cosmos'
+import type { Mood } from '#shared/utils/moods'
 import { analyzeText } from '#shared/utils/affect'
 
 /** The demo entries analyzed with the same code as real ones. */

@@ -3,7 +3,8 @@
  * A week of dumps arranged as a little solar system. The biggest
  * (most words) sits at the center; the rest are spread around two orbits.
  */
-import { MOODS, type PlanetColor } from '#shared/utils/cosmos'
+// Unused (kept from the first design pass). Safe to delete.
+import { MOODS, PLANET_COLORS, type PlanetColor } from '#shared/utils/moods'
 import { planetRadius, type Dump } from '~/data/sampleDumps'
 
 const props = defineProps<{ dumps: Dump[] }>()
@@ -13,7 +14,7 @@ const uid = useId()
 const bodies = computed(() => {
   const sorted = [...props.dumps].sort((a, b) => b.words - a.words).slice(0, 8)
   return sorted.map((d, i) => {
-    const color = MOODS[d.primary].color as PlanetColor
+    const color = (Object.keys(PLANET_COLORS) as PlanetColor[]).find((k) => PLANET_COLORS[k].lit === MOODS[d.primary].color) ?? 'cobalt'
     if (i === 0) return { id: d.id, x: 200, y: 200, r: 58, color, ring: d.primary === 'anxious' }
     const orbit = i % 2 === 1 ? 168 : 110
     const angle = (i * 137.5 * Math.PI) / 180 // golden angle spreads them evenly

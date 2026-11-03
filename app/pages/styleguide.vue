@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MOODS, PLANET_COLORS, type Mood, type PlanetColor } from '#shared/utils/cosmos'
+import { MOODS, PLANET_COLORS, type Mood, type PlanetColor } from '#shared/utils/moods'
 import { demoWeek } from '~/data/sampleDumps'
 
 useHead({ title: 'Styleguide' })
@@ -24,7 +24,7 @@ const neutrals = [
     <header class="sg__head">
       <p class="bd-label">Brand system · Dawn Orbit</p>
       <BdLogo size="lg" />
-      <p class="bd-muted">Every value here comes from <code>app/assets/css/tokens.css</code> and <code>app/utils/brand.ts</code>. Change them there and the site follows.</p>
+      <p class="bd-muted">Every value here comes from <code>app/assets/css/tokens.css</code> and <code>shared/utils/moods.ts</code>. Change them there and the site follows.</p>
     </header>
 
     <section class="sg__section">

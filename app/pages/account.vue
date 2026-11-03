@@ -39,9 +39,9 @@ async function deleteAccount() {
     </section>
 
     <section class="bd-card account__card">
-      <h2 class="account__title">Appearance</h2>
-      <p class="bd-muted">Light or night, and how your mornings are drawn: planets, geometry, watercolor or Albers squares.</p>
-      <NuxtLink to="/settings" class="bd-btn bd-btn--outline">Change appearance</NuxtLink>
+      <h2 class="account__title">Make it yours</h2>
+      <p class="bd-muted">Each feeling's color and shape, light or night, how your mornings are drawn, and what to call you and your journal.</p>
+      <NuxtLink to="/settings" class="bd-btn bd-btn--outline">Open settings</NuxtLink>
     </section>
 
     <section class="bd-card account__card">

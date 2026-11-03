@@ -3,6 +3,7 @@ import type { DumpSummary } from '#shared/types/dump'
 
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Your mornings' })
+const { user } = useUserSession()
 
 const { data: dumps, status, error } = await useFetch<DumpSummary[]>('/api/dumps', { query: { kind: 'dump' }, default: () => [] })
 
@@ -29,6 +30,7 @@ const weeks = computed(() => {
 <template>
   <div class="journal bd-container">
     <header class="journal__head">
+      <p v-if="user?.journalName" class="bd-label">{{ user.journalName }}</p>
       <h1 class="bd-display">Your <span class="bd-serif-italic">mornings</span></h1>
       <p class="bd-muted">Each morning is a solar system. Each week spirals into a galaxy.</p>
     </header>

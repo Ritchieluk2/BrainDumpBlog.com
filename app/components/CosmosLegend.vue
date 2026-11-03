@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /** Explains what's in a solar system: the feelings, then any comets, nebulae, etc. */
-import { AFFECT_FEATURES, MOODS, rankedMoods, type Affect } from '#shared/utils/cosmos'
+import { AFFECT_FEATURES, rankedMoods, type Affect } from '#shared/utils/cosmos'
+import { MOODS } from '#shared/utils/moods'
 
 const props = withDefaults(defineProps<{ affect: Affect; showAll?: boolean }>(), { showAll: false })
 

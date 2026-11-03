@@ -1,16 +1,19 @@
 <script setup lang="ts">
 const { loggedIn } = useUserSession()
+const route = useRoute()
+// The welcome flow has its own Back/Next bar, so the phone tab bar steps aside there.
+const tabs = computed(() => loggedIn.value && route.path !== '/welcome')
 </script>
 
 <template>
-  <div class="layout" :class="{ 'has-tabbar': loggedIn }">
+  <div class="layout" :class="{ 'has-tabbar': tabs }">
     <a href="#main" class="skip-link">Skip to content</a>
     <SiteHeader />
     <main id="main" class="layout__main">
       <slot />
     </main>
     <SiteFooter />
-    <MobileTabBar v-if="loggedIn" />
+    <MobileTabBar v-if="tabs" />
   </div>
 </template>
 

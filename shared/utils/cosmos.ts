@@ -11,7 +11,7 @@
  * Visual vocabulary (what each body means):
  *   Star (center)   strongest feeling; size = how strong; rays = energy
  *   Planets         other feelings, nearest = strongest; size = intensity
- *   Ringed planet   anxiety
+ *   Color + shape   which feeling it is (each person can choose these; see moods.ts)
  *   Moons           a feeling that rides along with another
  *   Comets          racing / jumping thoughts
  *   Asteroid belt   scattered to-dos and loose ends
@@ -20,34 +20,15 @@
  *   Sparkles        small joys, gratitude
  */
 
-// ---------------------------------------------------------------------------
-// Palette and moods
-// ---------------------------------------------------------------------------
-
-export const PLANET_COLORS = {
-  terracotta: { lit: '#E2614A', shade: '#B8432F' },
-  marigold: { lit: '#F2A93B', shade: '#CC8418' },
-  saffron: { lit: '#F6CF4A', shade: '#D6A91E' },
-  teal: { lit: '#1FA39B', shade: '#127B75' },
-  cobalt: { lit: '#2F5BEA', shade: '#1E3FB5' },
-  plum: { lit: '#8A4FBF', shade: '#673495' },
-  magenta: { lit: '#D94F8C', shade: '#AE3369' }
-} as const
-
-export type PlanetColor = keyof typeof PLANET_COLORS
-
-export const MOODS = {
-  joyful: { label: 'joyful', color: 'saffron', shape: 'star' },
-  calm: { label: 'calm', color: 'cobalt', shape: 'sphere' },
-  anxious: { label: 'anxious', color: 'terracotta', shape: 'ringed' },
-  focused: { label: 'focused', color: 'marigold', shape: 'triangle' },
-  tired: { label: 'tired', color: 'plum', shape: 'crescent' },
-  hopeful: { label: 'hopeful', color: 'teal', shape: 'square' },
-  tender: { label: 'tender', color: 'magenta', shape: 'sphere' }
-} as const satisfies Record<string, { label: string; color: PlanetColor; shape: string }>
-
-export type Mood = keyof typeof MOODS
-export const MOOD_KEYS = Object.keys(MOODS) as Mood[]
+import {
+  DEFAULT_MOOD_MAP,
+  MOOD_KEYS,
+  moodGradients,
+  moodTone,
+  shapeSvg,
+  type Mood,
+  type MoodMap
+} from './moods'
 
 /** The full analysis of one brain dump. All values 0..1 unless noted. */
 export interface Affect {
@@ -120,13 +101,6 @@ export const NIGHT = { bg: '#15121D', ink: '#EEE8E1', line: '#2E2A38' } as const
 export const DAY = { bg: '#FFFFFF', ink: INK, line: '#ECE8E2' } as const
 export const surfaceFor = (night?: boolean) => (night ? NIGHT : DAY)
 
-export function gradientDefs(prefix: string): string {
-  return (Object.entries(PLANET_COLORS) as [PlanetColor, { lit: string; shade: string }][])
-    .map(([name, c]) =>
-      `<linearGradient id="${prefix}-${name}" x1="0" y1="0" x2="1" y2="1">` +
-      `<stop offset="0.58" stop-color="${c.lit}"/><stop offset="0.58" stop-color="${c.shade}"/></linearGradient>`)
-    .join('')
-}
 
 export function sparkle(x: number, y: number, s: number, color: string, opacity = 1): string {
   // four-point star
@@ -159,8 +133,9 @@ export function wormhole(x: number, y: number, size: number, opacity: number, ti
   return out
 }
 
-export function comet(prefix: string, idx: number, x: number, y: number, angle: number, len: number, color: PlanetColor): string {
-  const c = PLANET_COLORS[color]
+/** A comet in a feeling's color; its head uses that feeling's gradient. */
+export function comet(prefix: string, idx: number, x: number, y: number, angle: number, len: number, mood: Mood, map?: MoodMap): string {
+  const c = moodTone(map, mood)
   const tx = x - Math.cos(angle) * len
   const ty = y - Math.sin(angle) * len
   const gid = `${prefix}-comet-${idx}`
@@ -171,7 +146,7 @@ export function comet(prefix: string, idx: number, x: number, y: number, angle: 
   return `<linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${f(x)}" y1="${f(y)}" x2="${f(tx)}" y2="${f(ty)}">` +
     `<stop offset="0" stop-color="${c.lit}" stop-opacity="0.85"/><stop offset="1" stop-color="${c.lit}" stop-opacity="0"/></linearGradient>` +
     `<path d="${tail}" fill="url(#${gid})"/>` +
-    `<circle cx="${f(x)}" cy="${f(y)}" r="3" fill="url(#${prefix}-${color})"/>`
+    `<circle cx="${f(x)}" cy="${f(y)}" r="3" fill="url(#${prefix}-${mood})"/>`
 }
 
 // ---------------------------------------------------------------------------
@@ -187,6 +162,8 @@ export interface RenderOptions {
   title?: string
   /** Dark background for night mode. */
   night?: boolean
+  /** The reader's colors and shapes for each feeling. Defaults to DEFAULT_MOOD_MAP. */
+  moods?: MoodMap
 }
 
 export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
@@ -198,12 +175,13 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
   const cy = 100
   const ranked = rankedMoods(a)
   const [domMood, domVal] = ranked[0] ?? (['calm', 0.3] as [Mood, number])
-  const domColor = MOODS[domMood].color
+  const map = opts.moods ?? DEFAULT_MOOD_MAP
+  const T = (m: Mood) => moodTone(map, m)
   const tilt = -18 + rng() * 10
   const sf = surfaceFor(opts.night)
 
   const layers: string[] = []
-  const defs: string[] = [gradientDefs(p)]
+  const defs: string[] = [moodGradients(p, map)]
   defs.push(`<filter id="${p}-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>`)
   defs.push(`<filter id="${p}-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>`)
   defs.push(`<clipPath id="${p}-clip"><rect width="${S}" height="${S}" rx="28"/></clipPath>`)
@@ -214,14 +192,14 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
 
   // Nebula (behind everything)
   if (a.fog > 0.1) {
-    const fogColors: PlanetColor[] = [a.moods.tired > a.moods.calm ? 'plum' : 'cobalt', domColor]
+    const fogMoods: Mood[] = [a.moods.tired > a.moods.calm ? 'tired' : 'calm', domMood]
     const n = a.fog > 0.5 ? 3 : 2
     for (let i = 0; i < n; i++) {
       const ang = rng() * Math.PI * 2
       const dist = 40 + rng() * 40
       const x = cx + Math.cos(ang) * dist
       const y = cy + Math.sin(ang) * dist
-      const col = PLANET_COLORS[fogColors[i % fogColors.length]!].lit
+      const col = T(fogMoods[i % fogMoods.length]!).lit
       layers.push(`<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(28 + rng() * 22)}" ry="${f(16 + rng() * 14)}" transform="rotate(${f(rng() * 180)} ${f(x)} ${f(y)})" fill="${col}" opacity="${f(0.12 + a.fog * 0.3)}" filter="url(#${p}-blur)"/>`)
     }
   }
@@ -235,7 +213,7 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
   // Sparkles (small joys)
   const sparkCount = Math.round(a.sparks * 9)
   for (let i = 0; i < sparkCount; i++) {
-    const col = i % 3 === 0 ? PLANET_COLORS.marigold.lit : PLANET_COLORS.saffron.lit
+    const col = i % 3 === 0 ? T('focused').lit : T('joyful').lit
     layers.push(sparkle(10 + rng() * 180, 10 + rng() * 180, 2.5 + rng() * 3.5, col, 0.9))
   }
 
@@ -261,17 +239,13 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
     const x = cx + Math.cos(ang) * r
     const y = cy + Math.sin(ang) * r * 0.92
     const pr = 3.5 + val * 8
-    const color = MOODS[mood].color
-    if (mood === 'anxious') {
-      bodyLayer.push(`<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(pr * 1.8)}" ry="${f(pr * 0.45)}" fill="none" stroke="${PLANET_COLORS[color].shade}" stroke-width="1.6" transform="rotate(-20 ${f(x)} ${f(y)})"/>`)
-    }
-    bodyLayer.push(`<circle cx="${f(x)}" cy="${f(y)}" r="${f(pr)}" fill="url(#${p}-${color})"/>`)
+    bodyLayer.push(shapeSvg(map[mood].shape, x, y, pr, { fill: `url(#${p}-${mood})`, ring: T(mood).shade }))
     // moon: the next-ranked mood rides along with strong planets
     const moonMood = ranked[i + 6]?.[0] ?? (val > 0.45 && rng() > 0.4 ? planets[(i + 1) % planets.length]?.[0] : undefined)
     if (moonMood && moonMood !== mood) {
       const ma = rng() * Math.PI * 2
       const md = pr + 4
-      bodyLayer.push(`<circle cx="${f(x + Math.cos(ma) * md)}" cy="${f(y + Math.sin(ma) * md)}" r="${f(Math.max(1.8, pr * 0.32))}" fill="url(#${p}-${MOODS[moonMood].color})"/>`)
+      bodyLayer.push(shapeSvg(map[moonMood].shape, x + Math.cos(ma) * md, y + Math.sin(ma) * md, Math.max(1.8, pr * 0.32), { fill: `url(#${p}-${moonMood})`, ring: T(moonMood).shade }))
     }
 
     // asteroid belt between 2nd and 3rd orbit (or after the last if fewer)
@@ -313,14 +287,14 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
   // Star (dominant mood)
   const rays = 8 + Math.round(a.arousal * 10)
   const starLayer: string[] = []
-  starLayer.push(`<circle cx="${cx}" cy="${cy}" r="${f(starR * 1.9)}" fill="${PLANET_COLORS[domColor].lit}" opacity="0.14" filter="url(#${p}-soft)"/>`)
+  starLayer.push(`<circle cx="${cx}" cy="${cy}" r="${f(starR * 1.9)}" fill="${T(domMood).lit}" opacity="0.14" filter="url(#${p}-soft)"/>`)
   for (let i = 0; i < rays; i++) {
     const ang = (i / rays) * Math.PI * 2 + rng() * 0.15
     const r1 = starR + 3
     const r2 = starR + 5 + a.arousal * 6 + (i % 2) * 2
-    starLayer.push(`<line x1="${f(cx + Math.cos(ang) * r1)}" y1="${f(cy + Math.sin(ang) * r1)}" x2="${f(cx + Math.cos(ang) * r2)}" y2="${f(cy + Math.sin(ang) * r2)}" stroke="${PLANET_COLORS[domColor].lit}" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>`)
+    starLayer.push(`<line x1="${f(cx + Math.cos(ang) * r1)}" y1="${f(cy + Math.sin(ang) * r1)}" x2="${f(cx + Math.cos(ang) * r2)}" y2="${f(cy + Math.sin(ang) * r2)}" stroke="${T(domMood).lit}" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>`)
   }
-  starLayer.push(`<circle cx="${cx}" cy="${cy}" r="${f(starR)}" fill="url(#${p}-${domColor})"/>`)
+  starLayer.push(shapeSvg(map[domMood].shape, cx, cy, starR, { fill: `url(#${p}-${domMood})`, ring: T(domMood).shade }))
 
   // Comets (racing thoughts)
   const cometLayer: string[] = []
@@ -332,8 +306,9 @@ export function renderSolarSystem(a: Affect, opts: RenderOptions): string {
     const y = cy + Math.sin(ang) * dist
     // travel roughly tangentially, tail pointing back
     const dir = ang + Math.PI / 2 + (rng() - 0.5) * 0.8
-    const col: PlanetColor = rng() > 0.5 ? 'terracotta' : domColor
-    cometLayer.push(comet(p, i, x, y, dir, 22 + rng() * 16, col))
+    // comets take the anxious color (or the day's main feeling)
+    const col: Mood = rng() > 0.5 ? 'anxious' : domMood
+    cometLayer.push(comet(p, i, x, y, dir, 22 + rng() * 16, col, map))
   }
 
   const title = opts.title ? `<title>${escapeXml(opts.title)}</title>` : ''
@@ -378,13 +353,15 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
   const cy = 100
   const week = averageAffect(days.map((d) => d.affect))
   const weekRanked = rankedMoods(week)
-  const core = MOODS[weekRanked[0]?.[0] ?? 'calm'].color
-  const second: PlanetColor = MOODS[weekRanked[1]?.[0] ?? weekRanked[0]?.[0] ?? 'calm'].color
+  const map = opts.moods ?? DEFAULT_MOOD_MAP
+  const T = (m: Mood) => moodTone(map, m)
+  const core: Mood = weekRanked[0]?.[0] ?? 'calm'
+  const second: Mood = weekRanked[1]?.[0] ?? core
   const rot = rng() * Math.PI * 2
   const arms = 2
   const sf = surfaceFor(opts.night)
 
-  const defs: string[] = [gradientDefs(p)]
+  const defs: string[] = [moodGradients(p, map)]
   defs.push(`<filter id="${p}-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>`)
   defs.push(`<filter id="${p}-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>`)
   defs.push(`<clipPath id="${p}-clip"><rect width="${S}" height="${S}" rx="28"/></clipPath>`)
@@ -409,7 +386,7 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
   const clouds = 3 + Math.round(week.fog * 3)
   for (let i = 0; i < clouds; i++) {
     const pt = armPoint(i % arms, 10 + rng() * 16)
-    const col = PLANET_COLORS[i % 2 === 0 ? core : second].lit
+    const col = T(i % 2 === 0 ? core : second).lit
     disc.push(`<ellipse cx="${f(pt.x)}" cy="${f(pt.y)}" rx="${f(16 + rng() * 14)}" ry="${f(8 + rng() * 6)}" fill="${col}" opacity="${f(0.14 + week.fog * 0.2)}" filter="url(#${p}-blur)"/>`)
   }
 
@@ -423,7 +400,7 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
       const x = pt.x + g * spread * 2
       const y = pt.y + g2 * spread
       const colored = rng() < 0.12
-      const fill = colored ? PLANET_COLORS[rng() > 0.5 ? core : second].lit : sf.ink
+      const fill = colored ? T(rng() > 0.5 ? core : second).lit : sf.ink
       const fade = 1 - t / T_MAX * 0.6
       disc.push(`<circle cx="${f(x)}" cy="${f(y)}" r="${f(0.4 + rng() * 0.8)}" fill="${fill}" opacity="${f((colored ? 0.8 : 0.16 + rng() * 0.3) * fade)}"/>`)
     }
@@ -437,8 +414,8 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
   }
 
   // core glow
-  disc.push(`<ellipse cx="${cx}" cy="${cy}" rx="30" ry="${f(30 * squash)}" fill="${PLANET_COLORS[core].lit}" opacity="0.28" filter="url(#${p}-soft)"/>`)
-  disc.push(`<circle cx="${cx}" cy="${cy}" r="8" fill="url(#${p}-${core})"/>`)
+  disc.push(`<ellipse cx="${cx}" cy="${cy}" rx="30" ry="${f(30 * squash)}" fill="${T(core).lit}" opacity="0.28" filter="url(#${p}-soft)"/>`)
+  disc.push(shapeSvg(map[core].shape, cx, cy, 8, { fill: `url(#${p}-${core})`, ring: T(core).shade }))
 
   // one star system per day, placed along the arms in order
   const sorted = [...days]
@@ -447,15 +424,14 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
     const t = 6 + Math.floor(i / arms) * 6.5 + (arm ? 3 : 0)
     const pt = armPoint(arm, t)
     const dm = dominantMood(d.affect)
-    const col = MOODS[dm].color
     const r = 2.6 + clamp((d.affect.words - 100) / 600) * 3.4
-    disc.push(`<circle cx="${f(pt.x)}" cy="${f(pt.y)}" r="${f(r * 2.4)}" fill="${PLANET_COLORS[col].lit}" opacity="0.18"/>`)
-    disc.push(`<circle cx="${f(pt.x)}" cy="${f(pt.y)}" r="${f(r)}" fill="url(#${p}-${col})"/>`)
+    disc.push(`<circle cx="${f(pt.x)}" cy="${f(pt.y)}" r="${f(r * 2.4)}" fill="${T(dm).lit}" opacity="0.18"/>`)
+    disc.push(shapeSvg(map[dm].shape, pt.x, pt.y, r, { fill: `url(#${p}-${dm})`, ring: T(dm).shade }))
     // its planets as tiny satellites
     rankedMoods(d.affect).slice(1, 4).forEach(([m], k) => {
       const a = rng() * Math.PI * 2
       const dist = r + 3 + k * 2
-      disc.push(`<circle cx="${f(pt.x + Math.cos(a) * dist)}" cy="${f(pt.y + Math.sin(a) * dist * 0.8)}" r="1.1" fill="${PLANET_COLORS[MOODS[m].color].shade}"/>`)
+      disc.push(`<circle cx="${f(pt.x + Math.cos(a) * dist)}" cy="${f(pt.y + Math.sin(a) * dist * 0.8)}" r="1.1" fill="${T(m).shade}"/>`)
     })
   })
 
@@ -464,7 +440,7 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
   // a few sparkles for the week's small joys
   const sparkCount = 2 + Math.round(week.sparks * 6)
   for (let i = 0; i < sparkCount; i++) {
-    out.push(sparkle(12 + rng() * 176, 12 + rng() * 176, 2 + rng() * 3, PLANET_COLORS.saffron.lit, 0.85))
+    out.push(sparkle(12 + rng() * 176, 12 + rng() * 176, 2 + rng() * 3, T('joyful').lit, 0.85))
   }
 
   // a wormhole if the week kept looping
@@ -477,7 +453,7 @@ export function renderGalaxy(days: GalaxyDay[], opts: RenderOptions): string {
     const ang = rng() * Math.PI * 2
     const x = cx + Math.cos(ang) * 78
     const y = cy + Math.sin(ang) * 70
-    out.push(comet(p, 0, x, y, ang + Math.PI / 2, 28, 'terracotta'))
+    out.push(comet(p, 0, x, y, ang + Math.PI / 2, 28, 'anxious', map))
   }
 
   const title = opts.title ? `<title>${escapeXml(opts.title)}</title>` : ''

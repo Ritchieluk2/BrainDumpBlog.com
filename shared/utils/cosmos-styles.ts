@@ -10,8 +10,6 @@
  * thoughts, to-dos, fog, loops, small joys); only the visual language changes.
  */
 import {
-  MOODS,
-  PLANET_COLORS,
   averageAffect,
   dominantMood,
   escapeXml,
@@ -24,9 +22,9 @@ import {
   surfaceFor,
   type Affect,
   type GalaxyDay,
-  type Mood,
   type RenderOptions
 } from './cosmos'
+import { DEFAULT_MOOD_MAP, MOOD_KEYS, moodTone, shapeSvg, type Mood, type MoodMap } from './moods'
 
 export type ArtStyle = 'planets' | 'geometry' | 'watercolor' | 'albers'
 
@@ -42,6 +40,7 @@ export function isArtStyle(v: unknown): v is ArtStyle {
 }
 
 export function renderDay(style: ArtStyle, a: Affect, opts: RenderOptions): string {
+  current = opts.moods ?? DEFAULT_MOOD_MAP
   switch (style) {
     case 'geometry': return geometryDay(a, opts)
     case 'watercolor': return watercolorDay(a, opts)
@@ -51,6 +50,7 @@ export function renderDay(style: ArtStyle, a: Affect, opts: RenderOptions): stri
 }
 
 export function renderWeek(style: ArtStyle, days: GalaxyDay[], opts: RenderOptions): string {
+  current = opts.moods ?? DEFAULT_MOOD_MAP
   switch (style) {
     case 'geometry': return geometryWeek(days, opts)
     case 'watercolor': return watercolorWeek(days, opts)
@@ -71,8 +71,13 @@ function mix(a: string, b: string, t: number): string {
   return '#' + pa.map((v, i) => Math.round(v + (pb[i]! - v) * t).toString(16).padStart(2, '0')).join('')
 }
 
-const lit = (m: Mood) => PLANET_COLORS[MOODS[m].color].lit
-const shade = (m: Mood) => PLANET_COLORS[MOODS[m].color].shade
+/**
+ * The reader's colors and shapes for the picture being drawn. Set at the top of
+ * renderDay/renderWeek; drawing is synchronous, so this can't leak between pictures.
+ */
+let current: MoodMap = DEFAULT_MOOD_MAP
+const lit = (m: Mood) => moodTone(current, m).lit
+const shade = (m: Mood) => moodTone(current, m).shade
 
 function frame(p: string, opts: RenderOptions, defs: string, body: string): string {
   const title = opts.title ? `<title>${escapeXml(opts.title)}</title>` : ''
@@ -102,29 +107,7 @@ function topMoods(a: Affect, n: number): [Mood, number][] {
 // ---------------------------------------------------------------------------
 
 function shapeFor(mood: Mood, x: number, y: number, size: number, fill: string, rot = 0): string {
-  const h = size / 2
-  const t = `transform="rotate(${f(rot)} ${f(x)} ${f(y)})"`
-  switch (MOODS[mood].shape) {
-    case 'star': {
-      const pts: string[] = []
-      for (let i = 0; i < 16; i++) {
-        const r = i % 2 === 0 ? h : h * 0.45
-        const ang = (i / 16) * Math.PI * 2 - Math.PI / 2
-        pts.push(`${f(x + Math.cos(ang) * r)},${f(y + Math.sin(ang) * r)}`)
-      }
-      return `<polygon points="${pts.join(' ')}" fill="${fill}" ${t}/>`
-    }
-    case 'ringed':
-      return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(h * 0.55)}" fill="${fill}"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(h * 0.88)}" fill="none" stroke="${fill}" stroke-width="${f(Math.max(2, h * 0.16))}"/>`
-    case 'triangle':
-      return `<polygon points="${f(x)},${f(y - h)} ${f(x + h * 0.95)},${f(y + h * 0.75)} ${f(x - h * 0.95)},${f(y + h * 0.75)}" fill="${fill}" ${t}/>`
-    case 'crescent':
-      return `<path d="M${f(x - h)} ${f(y)} A${f(h)} ${f(h)} 0 0 1 ${f(x + h)} ${f(y)} Z" fill="${fill}" ${t}/>`
-    case 'square':
-      return `<rect x="${f(x - h * 0.8)}" y="${f(y - h * 0.8)}" width="${f(h * 1.6)}" height="${f(h * 1.6)}" fill="${fill}" ${t}/>`
-    default:
-      return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(h)}" fill="${fill}"/>`
-  }
+  return shapeSvg(current[mood].shape, x, y, size / 2, { fill, rotate: rot, sharp: true })
 }
 
 function geoGrid(line: string): string {
@@ -141,7 +124,7 @@ function geometryDay(a: Affect, opts: RenderOptions): string {
   const ranked = rankedMoods(a)
   const [dom, domVal] = ranked[0] ?? (['calm', 0.3] as [Mood, number])
   const out: string[] = []
-  const defs = `<pattern id="${p}-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="${PLANET_COLORS.plum.lit}" stroke-width="2"/></pattern>`
+  const defs = `<pattern id="${p}-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="${lit('tired')}" stroke-width="2"/></pattern>`
 
   if (opts.background !== false) out.push(`<rect width="${S}" height="${S}" fill="${sf.bg}"/>`)
   out.push(geoGrid(sf.line))
@@ -175,8 +158,11 @@ function geometryDay(a: Affect, opts: RenderOptions): string {
   const cx = 88 + rng() * 24
   const cy = 90 + rng() * 18
   const r = 26 + domVal * 20
-  out.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="${lit(dom)}"/>`)
-  out.push(`<path d="M${f(cx)} ${f(cy - r)} A${f(r)} ${f(r)} 0 0 1 ${f(cx)} ${f(cy + r)} Z" fill="${shade(dom)}"/>`)
+  // in its own shape, with the right half in shade (clipped)
+  const domShape = (fill: string) => shapeSvg(current[dom].shape, cx, cy, r, { fill, ring: fill, sharp: true })
+  out.push(`<clipPath id="${p}-half"><rect x="${f(cx)}" y="0" width="${S}" height="${S}"/></clipPath>`)
+  out.push(domShape(lit(dom)))
+  out.push(`<g clip-path="url(#${p}-half)">${domShape(shade(dom))}</g>`)
   out.push(`<line x1="${f(cx - r - 14)}" y1="${f(cy)}" x2="${f(cx + r + 14)}" y2="${f(cy)}" stroke="${sf.ink}" stroke-width="2"/>`)
 
   // other feelings: shapes in the grid cells around it
@@ -200,7 +186,7 @@ function geometryDay(a: Affect, opts: RenderOptions): string {
     const y = 20 + rng() * 160
     const len = 34 + rng() * 26
     const ang = -Math.PI / 4 + (rng() > 0.5 ? Math.PI / 2 : 0)
-    out.push(`<line x1="${f(x)}" y1="${f(y)}" x2="${f(x + Math.cos(ang) * len)}" y2="${f(y + Math.sin(ang) * len)}" stroke="${PLANET_COLORS.terracotta.lit}" stroke-width="5"/>`)
+    out.push(`<line x1="${f(x)}" y1="${f(y)}" x2="${f(x + Math.cos(ang) * len)}" y2="${f(y + Math.sin(ang) * len)}" stroke="${lit('anxious')}" stroke-width="5"/>`)
   }
 
   // small joys: plus signs
@@ -208,7 +194,7 @@ function geometryDay(a: Affect, opts: RenderOptions): string {
   for (let i = 0; i < pluses; i++) {
     const x = 14 + rng() * 172
     const y = 14 + rng() * 172
-    out.push(`<path d="M${f(x - 4)} ${f(y)} H${f(x + 4)} M${f(x)} ${f(y - 4)} V${f(y + 4)}" stroke="${PLANET_COLORS.saffron.shade}" stroke-width="2.4"/>`)
+    out.push(`<path d="M${f(x - 4)} ${f(y)} H${f(x + 4)} M${f(x)} ${f(y - 4)} V${f(y + 4)}" stroke="${shade('joyful')}" stroke-width="2.4"/>`)
   }
 
   return frame(p, opts, defs, out.join(''))
@@ -233,7 +219,9 @@ function geometryWeek(days: GalaxyDay[], opts: RenderOptions): string {
     out.push(`<polyline points="${pts.map((q) => `${f(q.x)},${f(q.y)}`).join(' ')}" fill="none" stroke="${sf.ink}" stroke-width="1.2" opacity="0.45"/>`)
   }
   // the week's core
-  out.push(`<circle cx="100" cy="100" r="30" fill="${lit(core)}"/><path d="M100 70 A30 30 0 0 1 100 130 Z" fill="${shade(core)}"/>`)
+  out.push(`<clipPath id="${p}-half"><rect x="100" y="0" width="100" height="${S}"/></clipPath>`)
+  out.push(shapeSvg(current[core].shape, 100, 100, 30, { fill: lit(core), ring: lit(core), sharp: true }))
+  out.push(`<g clip-path="url(#${p}-half)">${shapeSvg(current[core].shape, 100, 100, 30, { fill: shade(core), ring: shade(core), sharp: true })}</g>`)
   for (const q of pts) {
     const m = dominantMood(q.d.affect)
     const size = 16 + Math.min(1, q.d.affect.words / 500) * 14
@@ -242,7 +230,7 @@ function geometryWeek(days: GalaxyDay[], opts: RenderOptions): string {
     out.push(shapeFor(m, q.x, q.y, size, lit(m), rot))
   }
   if (week.racing > 0.35) {
-    out.push(`<line x1="24" y1="176" x2="64" y2="136" stroke="${PLANET_COLORS.terracotta.lit}" stroke-width="5"/>`)
+    out.push(`<line x1="24" y1="176" x2="64" y2="136" stroke="${lit('anxious')}" stroke-width="5"/>`)
   }
   return frame(p, opts, '', out.join(''))
 }
@@ -289,7 +277,7 @@ function watercolorDay(a: Affect, opts: RenderOptions): string {
   const paint: string[] = []
   // fog: a broad, very soft wash
   if (a.fog > 0.1) {
-    const fogColor = a.moods.tired > a.moods.calm ? PLANET_COLORS.plum.lit : PLANET_COLORS.cobalt.lit
+    const fogColor = a.moods.tired > a.moods.calm ? lit('tired') : lit('calm')
     paint.push(`<ellipse cx="${f(60 + rng() * 80)}" cy="${f(60 + rng() * 80)}" rx="${f(70 + a.fog * 30)}" ry="${f(46 + a.fog * 20)}" fill="${fogColor}" opacity="${f(0.12 + a.fog * 0.22)}" filter="url(#${p}-wash)"/>`)
   }
   // the strongest feeling: a pooled center
@@ -298,12 +286,19 @@ function watercolorDay(a: Affect, opts: RenderOptions): string {
     paint.push(blob(p, 100 + (rng() - 0.5) * 8, 100 + (rng() - 0.5) * 8, r0 * (1 - i * 0.18), lit(dom), op, rng))
   }
   paint.push(blob(p, 104, 104, r0 * 0.45, shade(dom), op * 0.7, rng))
+  // each feeling's shape, sketched in pencil under its pool
+  const sketch = (m: Mood, x: number, y: number, r: number) =>
+    shapeSvg(current[m].shape, x, y, r, { stroke: sf.ink, strokeWidth: 1.1, opacity: night ? 0.5 : 0.4 })
+  const sketches: string[] = [sketch(dom, 100, 100, r0 * 0.5)]
   // other feelings: smaller pools around it
   const start = rng() * Math.PI * 2
   ranked.slice(1, 6).forEach(([m, v], i) => {
     const ang = start + i * 2.39996
     const dist = r0 + 22 + i * 9
-    paint.push(blob(p, 100 + Math.cos(ang) * dist, 100 + Math.sin(ang) * dist, 8 + v * 13, lit(m), op, rng))
+    const x = 100 + Math.cos(ang) * dist
+    const y = 100 + Math.sin(ang) * dist
+    paint.push(blob(p, x, y, 8 + v * 13, lit(m), op, rng))
+    sketches.push(sketch(m, x, y, 4 + v * 6))
   })
   // racing thoughts: quick brush strokes
   const strokes = Math.round(a.racing * 4)
@@ -316,9 +311,10 @@ function watercolorDay(a: Affect, opts: RenderOptions): string {
     const y2 = y + Math.sin(ang) * len
     const cxp = (x + x2) / 2 + (rng() - 0.5) * 20
     const cyp = (y + y2) / 2 + (rng() - 0.5) * 20
-    paint.push(`<path d="M${f(x)} ${f(y)} Q${f(cxp)} ${f(cyp)} ${f(x2)} ${f(y2)}" fill="none" stroke="${PLANET_COLORS.terracotta.lit}" stroke-width="5" stroke-linecap="round" opacity="${f(op + 0.1)}" filter="url(#${p}-wc)"/>`)
+    paint.push(`<path d="M${f(x)} ${f(y)} Q${f(cxp)} ${f(cyp)} ${f(x2)} ${f(y2)}" fill="none" stroke="${lit('anxious')}" stroke-width="5" stroke-linecap="round" opacity="${f(op + 0.1)}" filter="url(#${p}-wc)"/>`)
   }
   out.push(`<g style="mix-blend-mode:${blend}">${paint.join('')}</g>`)
+  out.push(`<g filter="url(#${p}-wc)">${sketches.join('')}</g>`)
 
   // loops: a faint ink spiral
   if (a.loops > 0.3) {
@@ -346,7 +342,7 @@ function watercolorDay(a: Affect, opts: RenderOptions): string {
   // small joys: gold flecks
   const flecks = Math.round(a.sparks * 10)
   for (let i = 0; i < flecks; i++) {
-    out.push(`<circle cx="${f(12 + rng() * 176)}" cy="${f(12 + rng() * 176)}" r="${f(1.4 + rng() * 1.6)}" fill="${PLANET_COLORS.saffron.lit}" opacity="0.85"/>`)
+    out.push(`<circle cx="${f(12 + rng() * 176)}" cy="${f(12 + rng() * 176)}" r="${f(1.4 + rng() * 1.6)}" fill="${lit('joyful')}" opacity="0.85"/>`)
   }
   // paper grain
   out.push(`<rect width="${S}" height="${S}" filter="url(#${p}-paper)" opacity="${night ? 0.12 : 0.16}"/>`)
@@ -366,17 +362,22 @@ function watercolorWeek(days: GalaxyDay[], opts: RenderOptions): string {
   paint.push(`<ellipse cx="100" cy="100" rx="70" ry="60" fill="${lit(core)}" opacity="${f(op * 0.6)}" filter="url(#${p}-wash)"/>`)
   const n = Math.max(days.length, 1)
   const rot = rng() * Math.PI * 2
+  const sketches: string[] = []
   days.forEach((d, i) => {
     const ang = rot + (i / n) * Math.PI * 2
     const dist = 46 + (rng() - 0.5) * 16
     const m = dominantMood(d.affect)
     const r = 16 + Math.min(1, d.affect.words / 500) * 12
-    paint.push(blob(p, 100 + Math.cos(ang) * dist, 100 + Math.sin(ang) * dist, r, lit(m), op, rng))
+    const x = 100 + Math.cos(ang) * dist
+    const y = 100 + Math.sin(ang) * dist
+    paint.push(blob(p, x, y, r, lit(m), op, rng))
+    sketches.push(shapeSvg(current[m].shape, x, y, r * 0.42, { stroke: sf.ink, strokeWidth: 1, opacity: night ? 0.45 : 0.35 }))
   })
   out.push(`<g style="mix-blend-mode:${night ? 'screen' : 'multiply'}">${paint.join('')}</g>`)
+  out.push(`<g filter="url(#${p}-wc)">${sketches.join('')}</g>`)
   const flecks = 2 + Math.round(week.sparks * 6)
   for (let i = 0; i < flecks; i++) {
-    out.push(`<circle cx="${f(14 + rng() * 172)}" cy="${f(14 + rng() * 172)}" r="${f(1.4 + rng() * 1.4)}" fill="${PLANET_COLORS.saffron.lit}" opacity="0.85"/>`)
+    out.push(`<circle cx="${f(14 + rng() * 172)}" cy="${f(14 + rng() * 172)}" r="${f(1.4 + rng() * 1.4)}" fill="${lit('joyful')}" opacity="0.85"/>`)
   }
   out.push(`<rect width="${S}" height="${S}" filter="url(#${p}-paper)" opacity="${night ? 0.12 : 0.16}"/>`)
   return frame(p, opts, wcDefs(p, seed), out.join(''))
@@ -441,6 +442,9 @@ function albersDay(a: Affect, opts: RenderOptions): string {
   rects.forEach((r, i) => {
     out.push(card(p, r.x, r.y, r.s, r.s, fills[i]!, (rng() - 0.5) * 2.4))
   })
+  // the strongest feeling's shape, cut from paper and laid on the innermost square
+  const inner = rects[rects.length - 1]!
+  out.push(`<g filter="url(#${p}-cut)">${shapeSvg(current[m1].shape, inner.x + inner.s / 2, inner.y + inner.s / 2, Math.max(7, inner.s * 0.26), { fill: paper, ring: paper, rotate: (rng() - 0.5) * 8 })}</g>`)
 
   // interplay: a translucent card of the second feeling crossing the inner squares
   if (rankedMoods(a).length > 1) {
@@ -452,12 +456,12 @@ function albersDay(a: Affect, opts: RenderOptions): string {
   // racing thoughts: thin cut strips
   const strips = Math.round(a.racing * 3)
   for (let i = 0; i < strips; i++) {
-    out.push(card(p, 10 + rng() * 110, 10 + rng() * 40, 60 + rng() * 40, 4, PLANET_COLORS.terracotta.lit, -35 + rng() * 70))
+    out.push(card(p, 10 + rng() * 110, 10 + rng() * 40, 60 + rng() * 40, 4, lit('anxious'), -35 + rng() * 70))
   }
   // to-dos: confetti of small cut squares along the bottom
   if (a.scattered > 0.15) {
     const n = 4 + Math.round(a.scattered * 10)
-    const colors = Object.values(PLANET_COLORS).map((c) => c.lit)
+    const colors = MOOD_KEYS.map(lit)
     for (let i = 0; i < n; i++) {
       const s = 5 + rng() * 4
       out.push(card(p, 10 + rng() * 175, 176 + rng() * 16, s, s, colors[Math.floor(rng() * colors.length)]!, rng() * 90))
@@ -466,7 +470,7 @@ function albersDay(a: Affect, opts: RenderOptions): string {
   // small joys: tiny bright squares near the top
   const joys = Math.round(a.sparks * 5)
   for (let i = 0; i < joys; i++) {
-    out.push(card(p, 12 + rng() * 170, 8 + rng() * 24, 6, 6, PLANET_COLORS.saffron.lit, rng() * 45))
+    out.push(card(p, 12 + rng() * 170, 8 + rng() * 24, 6, 6, lit('joyful'), rng() * 45))
   }
   return frame(p, opts, albersDefs(p, night), out.join(''))
 }

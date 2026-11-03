@@ -29,18 +29,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'This sign-in link was already used. Request a new one.' })
   }
 
-  // Find or create the account.
+  // Find or create the account. New accounts start with the default look and
+  // haven't seen the welcome yet.
   const existing = await db.sql`SELECT id, email FROM users WHERE email = ${row.email}`
   let user = existing.rows?.[0] as { id: string; email: string } | undefined
+  const isNew = !user
   if (!user) {
     user = { id: crypto.randomUUID(), email: row.email }
     await db.sql`INSERT INTO users (id, email, created_at) VALUES (${user.id}, ${user.email}, ${now})`
   }
 
+  const profile = await loadProfile(user.id)
   await replaceUserSession(event, {
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, name: profile.name, journalName: profile.journalName },
     loggedInAt: now
   })
 
-  return { ok: true }
+  // The browser applies saved preferences straight away, and goes to the
+  // welcome if it hasn't been finished.
+  return { ok: true, isNew, profile }
 })

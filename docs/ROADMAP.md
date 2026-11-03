@@ -1,8 +1,63 @@
 # Roadmap & review list
 
-_Last updated: Nov 2, 2026_
+_Last updated: Nov 3, 2026_
 
-## Shipped in this round (needs your review)
+## Shipped Nov 3: your colors, your shapes, and a welcome (needs your review)
+
+Try it: `npm run dev`, then open **http://localhost:3000/api/dev/demo-login?welcome=1**. That clears the demo account's names and saved look and starts the welcome. Settings live at **/settings**.
+
+### 1. Each feeling's color and shape
+- [ ] **Settings → Feelings** (`/settings`): tap a feeling to pick a color (15 swatches plus any custom color) and a shape (circle, ringed, star, triangle, square, diamond, hexagon, crescent, drop). A live morning and week preview sits beside it (above it on phones).
+- [ ] **Color sets**: Dawn (default), Garden, Tide, and Clear contrast (the Okabe–Ito palette, distinct for most kinds of color blindness). Sets change colors only, not shapes.
+- [ ] **Gentle warnings**: two feelings that look identical, two that share a color, and colors too light or too dark for one of the themes.
+- [ ] **Used everywhere**: all four art styles, mood icons, the legend, the sky-feature icons, and the Insights chart.
+
+Defaults (nobody has to set anything up):
+
+| Feeling | Color | Shape |
+| --- | --- | --- |
+| Joyful | Saffron | Star |
+| Calm | Cobalt | Circle |
+| Anxious | Terracotta | Ringed |
+| Focused | Marigold | Triangle |
+| Tired | Plum | Crescent |
+| Hopeful | Teal | Square |
+| Tender | Magenta | **Drop** (changed from circle, which calm already used) |
+
+Assumptions to confirm:
+- **Shape now shows up in every style.** Planets: each planet, the center star and the week's core take the feeling's shape. Geometry: same as before, now customizable. Watercolor: a faint pencil sketch of the shape under each pool. Albers: the strongest feeling's shape, cut from paper, sits on the innermost square. If planets should stay round, that's a quick change.
+- **The extras follow your colors too**: comets use your anxious color, sparkles your joyful color, fog your tired or calm color. Asteroids stay gray.
+- Only the seven existing feelings can be restyled. Comets, asteroid belt, nebula, wormhole and sparkles keep their own looks.
+- Color sets keep your shapes. "Reset all to default" resets both.
+
+### 2. Preferences now follow the account
+- [ ] Signed in, appearance, art style and the feeling map save to your account (new `prefs` column) and load on other devices. Signed out, they stay in the browser cookie as before. A new account starts with whatever you'd picked before signing up.
+- [ ] Export (`Account → Download my journal`) now includes names and preferences.
+
+Assumption to confirm: signing out leaves this browser's look as it is. On a shared computer, the next person sees your colors until they sign in. We could reset to the defaults on sign-out instead.
+
+### 3. The welcome flow (`/welcome`)
+After a new account's first sign-in, it runs before the journal. Five steps, every one skippable ("Skip, use the defaults"):
+1. **You**: what to call you (used in "Good morning, Sam.") and a name for the journal (shown on the journal page). Both optional.
+2. **How it works**: an annotated example morning. It explains that color and shape mark the feeling, the center is the strongest, the extras show how your mind was moving, and a week is one picture. Then "Why color *and* shape?" and "Why make them *yours*?".
+3. **Feelings**: the color and shape editor with a live preview. The button reads "Keep the defaults" until something changes.
+4. **Look**: light, night or system, and art style.
+5. **Ready**: a summary, then "Write your first morning". If they wrote a dump before signing up, the button reads "See your first morning".
+
+Details:
+- [ ] The sign-in page gets a short "New here?" note with the feeling icons.
+- [ ] The phone tab bar hides during the welcome, which has its own Back/Next bar.
+- [ ] Settings → "Replay the welcome" brings it back any time.
+- [ ] Existing accounts (yours and the demo) count as already welcomed, so nobody is sent through it unexpectedly.
+
+Assumptions to confirm:
+- A person who leaves mid-welcome (closes the tab) sees it again on their next sign-in, until they finish or skip.
+- Names are optional and never shown to anyone else. Length limits: name 40 characters, journal name 60.
+
+### Noticed while testing (not caused by this change)
+- The header's sun/moon icon logs a hydration warning when Appearance is "System" and the device is dark. The server can't know the device theme, so it draws the other icon first. It's harmless, but worth fixing by drawing that icon only in the browser.
+
+## Shipped Nov 2 (needs your review)
 
 To see everything with sample data, run `npm run dev` and open
 **http://localhost:3000/api/dev/demo-login?reset=1** (signs you in as the demo account and rebuilds its content).
@@ -46,7 +101,7 @@ Assumptions to confirm:
 ## Next up (proposed, not started)
 
 1. **Email reminders**: send due reminders through Resend on a schedule (Cloudflare Cron Trigger every 15 minutes). Needs a decision on quiet hours and whether to email at all by default.
-2. **Sync preferences to the account** so theme and art style follow you across devices.
+2. ~~Sync preferences to the account~~: done Nov 3.
 3. **Real affect analysis**: replace the word-list placeholder (`shared/utils/affect.ts`) with a model call. This will improve everything downstream: thumbnails, insights, topics, and to-do detection.
 4. **Running "profile" galaxy**: the stretch goal of an all-time image that grows with every morning.
 5. **Animated timeline**: watch weeks change shape over time (stretch goal from the original plan).
@@ -141,6 +196,6 @@ Key risks as we scale:
 - Dependence on Cloudflare.
 
 ## Housekeeping
-- [ ] Delete unused files: `app/components/OrbitSystem.vue`, `app/utils/brand.ts`.
+- [ ] Delete unused files: `app/components/OrbitSystem.vue`, `app/utils/brand.ts`. (Both were updated to keep compiling, so this can wait.)
 - [ ] Commit to git once you're happy (nothing has been committed for you).
-- Database changes run automatically on first request (migration 2 adds `kind`/`title` to entries, plus `entry_links` and `items` tables). No manual step needed.
+- Database changes run automatically on first request. Migration 2 adds `kind`/`title` to entries, plus `entry_links` and `items` tables. Migration 4 adds `display_name`, `journal_name`, `prefs` and `onboarded_at` to users. No manual step needed, locally or on D1.

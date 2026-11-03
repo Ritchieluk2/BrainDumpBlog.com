@@ -6,12 +6,13 @@
  * phone. Hover (mouse), tap (touch) or arrow keys pick a morning; the tooltip
  * has a link to open that entry.
  */
-import { MOODS, PLANET_COLORS, type Mood } from '#shared/utils/cosmos'
+import { MOODS, tone, type Mood } from '#shared/utils/moods'
 
 const props = defineProps<{
   points: { id: string; date: string; valence: number; mood: Mood }[]
 }>()
 
+const { moods: moodMap } = usePreferences()
 const box = ref<HTMLElement | null>(null)
 const width = ref(720)
 let ro: ResizeObserver | undefined
@@ -170,7 +171,7 @@ const shortDate = (iso: string) => formatIsoDate(iso, { month: 'short', day: 'nu
           :cx="p.x"
           :cy="p.y"
           :r="active === i ? 7 : narrow ? 4.5 : 5"
-          :fill="PLANET_COLORS[MOODS[p.mood].color].lit"
+          :fill="tone(moodMap[p.mood].color).lit"
           stroke="var(--bd-surface)"
           stroke-width="2"
         />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /** One entry drawn in the reader's chosen art style (planets by default). */
 import type { Affect } from '#shared/utils/cosmos'
+import type { MoodMap } from '#shared/utils/moods'
 import { renderDay, type ArtStyle } from '#shared/utils/cosmos-styles'
 
 const props = defineProps<{
@@ -12,6 +13,8 @@ const props = defineProps<{
   /** Override the reader's night-mode preference (for previews). A string, not a
    *  boolean, because Vue turns a missing boolean prop into `false`. */
   theme?: 'day' | 'night'
+  /** Override the reader's colors and shapes (for previews). */
+  moods?: MoodMap
 }>()
 
 const prefs = usePreferences()
@@ -23,7 +26,8 @@ const svg = computed(() => !mounted.value ? '' :
   renderDay(props.art ?? prefs.art.value, props.affect, {
     seed: props.seed,
     title: props.title,
-    night: props.theme ? props.theme === 'night' : prefs.night.value
+    night: props.theme ? props.theme === 'night' : prefs.night.value,
+    moods: props.moods ?? prefs.moods.value
   })
 )
 </script>

@@ -5,7 +5,8 @@
  * Unlocks once there are two weeks of history, because before that the
  * "patterns" would mostly be noise.
  */
-import { AFFECT_FEATURES, MOOD_KEYS, MOODS, dominantMood, type Affect, type Mood } from './cosmos'
+import { AFFECT_FEATURES, dominantMood, type Affect } from './cosmos'
+import { MOOD_KEYS, MOODS, type Mood } from './moods'
 import { FEELING_WORDS } from './affect'
 
 export const UNLOCK_DAYS = 14

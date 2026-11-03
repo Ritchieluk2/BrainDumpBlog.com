@@ -1,6 +1,7 @@
 /**
  * GET /api/dev/demo-login        sign in as the demo account (seeds it on first use)
  * GET /api/dev/demo-login?reset=1  rebuild all demo content so the dates end today
+ * GET /api/dev/demo-login?welcome=1  clear the demo's names and look, and open the welcome flow
  *
  * DEVELOPMENT ONLY. In a production build this route always answers 404,
  * so it can never be used to sign in on the live site.
@@ -71,6 +72,17 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  await replaceUserSession(event, { user: { id: userId, email: DEMO_EMAIL }, loggedInAt: now })
-  return sendRedirect(event, '/')
+  // ?welcome=1 replays the welcome flow on the demo account
+  const welcome = getQuery(event).welcome === '1'
+  if (welcome) {
+    await db.sql`UPDATE users SET onboarded_at = NULL, prefs = NULL, display_name = NULL, journal_name = NULL WHERE id = ${userId}`
+  } else {
+    await db.sql`UPDATE users SET onboarded_at = COALESCE(onboarded_at, ${now}) WHERE id = ${userId}`
+  }
+  const profile = await loadProfile(userId)
+  await replaceUserSession(event, {
+    user: { id: userId, email: DEMO_EMAIL, name: profile.name, journalName: profile.journalName },
+    loggedInAt: now
+  })
+  return sendRedirect(event, welcome ? '/welcome' : '/')
 })

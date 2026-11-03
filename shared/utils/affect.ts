@@ -5,7 +5,8 @@
  * store -> draw) works end to end today. It will be replaced by a proper
  * model call later; anything that returns an `Affect` can slot in here.
  */
-import type { Affect, Mood } from './cosmos'
+import type { Affect } from './cosmos'
+import type { Mood } from './moods'
 
 const LEXICON: Record<Mood, string[]> = {
   joyful: ['happy', 'excited', 'great', 'amazing', 'fun', 'laugh', 'yay', 'awesome', 'love', 'loved', 'wonderful', 'best', 'delight', 'proud', 'celebrate'],

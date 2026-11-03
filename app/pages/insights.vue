@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Insights } from '#shared/utils/insights'
-import { MOODS } from '#shared/utils/cosmos'
+import { MOODS } from '#shared/utils/moods'
 
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Insights' })
