@@ -34,8 +34,8 @@ const appearances = [
         <label v-for="s in ART_STYLES" :key="s.id" class="style" :class="{ 'is-on': art === s.id }">
           <input v-model="art" type="radio" name="art" :value="s.id" class="bd-sr-only">
           <span class="style__previews" aria-hidden="true">
-            <CosmosDay :affect="previewDay.affect" :seed="previewDay.id" :art="s.id" :night="night" />
-            <CosmosWeek :days="sample" seed="picker-week" :art="s.id" :night="night" />
+            <CosmosDay :affect="previewDay.affect" :seed="previewDay.id" :art="s.id" />
+            <CosmosWeek :days="sample" seed="picker-week" :art="s.id" />
           </span>
           <span class="style__label">{{ s.label }}</span>
           <span class="style__desc">{{ s.description }}</span>

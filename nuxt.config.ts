@@ -53,15 +53,23 @@ export default defineNuxtConfig({
       title: 'Brain Dump',
       titleTemplate: '%s · Brain Dump',
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        // viewport-fit=cover lets the page use the full iPhone screen; safe-area padding keeps content clear of the notch and home bar
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         {
           name: 'description',
           content: 'A morning journal that turns each brain dump into a small solar system, colored by how you felt.'
         },
-        { name: 'theme-color', content: '#FAF9F7' }
+        { name: 'theme-color', content: '#FAF9F7' },
+        // "Add to Home Screen" opens it like an app, without browser bars
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'Brain Dump' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {

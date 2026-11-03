@@ -2,7 +2,10 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
   margin: 0;
@@ -30,11 +33,19 @@ a:hover { color: var(--bd-ink-2); }
 ::selection { background: color-mix(in srgb, var(--bd-saffron) 45%, transparent); }
 
 /* ---- Layout ---- */
+/* Small phones: tighter page margins and card padding so content gets the width. */
+@media (max-width: 480px) {
+  :root { --bd-gutter: 16px; }
+}
+
 .bd-container {
   width: 100%;
   max-width: calc(var(--bd-max-width) + var(--bd-gutter) * 2);
   margin-inline: auto;
   padding-inline: var(--bd-gutter);
+  /* phones in landscape: stay clear of the notch */
+  padding-left: max(var(--bd-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--bd-gutter), env(safe-area-inset-right));
 }
 
 /* ---- Type helpers ---- */
@@ -72,6 +83,9 @@ a:hover { color: var(--bd-ink-2); }
   border-radius: var(--bd-radius-lg);
   box-shadow: var(--bd-shadow-card);
   padding: var(--bd-space-6) var(--bd-space-6);
+}
+@media (max-width: 480px) {
+  .bd-card { padding: 20px; border-radius: 22px; }
 }
 
 /* ---- Buttons ---- */
@@ -129,8 +143,20 @@ a:hover { color: var(--bd-ink-2); }
   background: var(--bd-surface);
   color: var(--bd-ink);
   font: inherit;
+  /* 16px or larger, or iPhones zoom the page in when the field is tapped */
+  font-size: max(16px, 1em);
 }
 .bd-input:focus { outline: none; border-color: var(--bd-ink-3); box-shadow: 0 0 0 4px var(--bd-line); }
+
+/* Any text field anywhere: never below 16px on touch screens (same iOS zoom issue). */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: max(16px, 1em) !important; }
+}
+
+/* Hover-only motion: on touch screens it sticks after a tap, so keep it to real pointers. */
+@media (hover: none) {
+  .bd-btn:hover { filter: none; }
+}
 
 .bd-sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

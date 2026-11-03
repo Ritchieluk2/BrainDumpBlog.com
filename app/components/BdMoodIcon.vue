@@ -67,7 +67,7 @@ const col = computed(() => PLANET_COLORS[info.value.color])
 </template>
 
 <style scoped>
-.bd-mood { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; }
+.bd-mood { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; flex: none; }
 .bd-mood svg { flex: none; }
 .bd-mood__label { font-size: var(--bd-text-xs); color: var(--bd-ink-2); }
 </style>

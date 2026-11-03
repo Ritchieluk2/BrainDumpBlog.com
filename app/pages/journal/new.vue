@@ -21,6 +21,8 @@ const selected = ref<string[]>(aboutId ? [aboutId] : [])
 const saving = ref(false)
 const error = ref('')
 const showAll = ref(false)
+const area = ref<HTMLTextAreaElement | null>(null)
+useAutosize(area, body, 240)
 
 if (editId) {
   // useRequestFetch forwards the session cookie when this runs on the server
@@ -86,6 +88,7 @@ async function save() {
         <label class="bd-sr-only" for="entry-body">Entry</label>
         <textarea
           id="entry-body"
+          ref="area"
           v-model="body"
           class="write__body bd-serif"
           rows="14"
@@ -145,7 +148,12 @@ async function save() {
   color: var(--bd-ink);
 }
 .write__title:focus { outline: none; border-bottom-color: var(--bd-ink-3); }
-.write__body { border: none; resize: vertical; background: transparent; color: var(--bd-ink); font-size: var(--bd-text-xl); line-height: 1.6; padding: 0; min-height: 280px; }
+.write__body { border: none; resize: none; overflow: hidden; background: transparent; color: var(--bd-ink); font-size: var(--bd-text-xl); line-height: 1.6; padding: 0; min-height: 240px; }
+@media (max-width: 480px) {
+  .write__body { font-size: var(--bd-text-lg); }
+  .write__title { font-size: var(--bd-text-xl); }
+  .write__footer .bd-btn { width: 100%; }
+}
 .write__body:focus { outline: none; }
 .write__footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--bd-space-3); }
 .write__count { font-size: 14px; color: var(--bd-ink-3); }

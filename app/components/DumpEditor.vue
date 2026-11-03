@@ -18,6 +18,8 @@ const emit = defineEmits<{ submit: [text: string] }>()
 const DRAFT_KEY = 'bd-draft'
 const text = ref('')
 const uid = useId()
+const area = ref<HTMLTextAreaElement | null>(null)
+useAutosize(area, text, 180)
 
 const words = computed(() => {
   const t = text.value.trim()
@@ -45,6 +47,7 @@ function submit() {
     <label :for="`dump-${uid}`" class="dump-editor__prompt">{{ props.prompt }}</label>
     <textarea
       :id="`dump-${uid}`"
+      ref="area"
       v-model="text"
       :rows="props.rows"
       class="dump-editor__text bd-serif"
@@ -65,14 +68,19 @@ function submit() {
   min-height: 180px;
   padding: 0;
   border: none;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   background: transparent;
   color: var(--bd-ink);
   font-size: var(--bd-text-xl);
   line-height: 1.55;
 }
 .dump-editor__text:focus { outline: none; }
-.dump-editor__text::placeholder { color: #A39C94; }
+.dump-editor__text::placeholder { color: var(--bd-ink-3); opacity: 0.8; }
+@media (max-width: 480px) {
+  .dump-editor__text { font-size: var(--bd-text-lg); }
+  .dump-editor__footer .bd-btn { width: 100%; }
+}
 .dump-editor__footer {
   display: flex;
   flex-wrap: wrap;

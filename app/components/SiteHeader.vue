@@ -13,12 +13,13 @@ function toggleNight() {
       <BdLogo />
     </NuxtLink>
     <nav aria-label="Main" class="site-header__nav">
-      <NuxtLink to="/why">Why brain dumps?</NuxtLink>
+      <NuxtLink to="/why" class="site-header__wide" :class="{ 'site-header__why': loggedIn }">Why brain dumps?</NuxtLink>
+      <!-- on phones these live in the bottom tab bar instead -->
       <template v-if="loggedIn">
-        <NuxtLink to="/journal">Journal</NuxtLink>
-        <NuxtLink to="/insights">Insights</NuxtLink>
-        <NuxtLink to="/account">Account</NuxtLink>
-        <NuxtLink to="/" class="bd-btn bd-btn--primary bd-btn--small">Write</NuxtLink>
+        <NuxtLink to="/journal" class="site-header__wide">Journal</NuxtLink>
+        <NuxtLink to="/insights" class="site-header__wide">Insights</NuxtLink>
+        <NuxtLink to="/account" class="site-header__wide">Account</NuxtLink>
+        <NuxtLink to="/" class="bd-btn bd-btn--primary bd-btn--small site-header__wide">Write</NuxtLink>
       </template>
       <NuxtLink v-else to="/sign-in" class="bd-btn bd-btn--outline bd-btn--small">Sign in</NuxtLink>
       <button
@@ -56,7 +57,7 @@ function toggleNight() {
 .site-header__mode:hover { border-color: var(--bd-ink-3); }
 .site-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   gap: var(--bd-space-4);
@@ -77,5 +78,15 @@ function toggleNight() {
   text-decoration: underline;
   text-decoration-color: var(--bd-sunrise);
   text-decoration-thickness: 2px;
+}
+/* tablets: signed-in header has more links, so "Why brain dumps?" lives in the footer */
+@media (max-width: 1099px) {
+  .site-header__nav { gap: var(--bd-space-2) 20px; }
+  .site-header__why { display: none; }
+}
+@media (max-width: 719px) {
+  .site-header { padding-block: 16px; }
+  .site-header__wide { display: none; }
+  .site-header__nav { gap: var(--bd-space-3); }
 }
 </style>

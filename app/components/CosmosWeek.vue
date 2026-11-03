@@ -8,7 +8,9 @@ const props = defineProps<{
   seed: string
   title?: string
   art?: ArtStyle
-  night?: boolean
+  /** Override the reader's night-mode preference (for previews). A string, not a
+   *  boolean, because Vue turns a missing boolean prop into `false`. */
+  theme?: 'day' | 'night'
 }>()
 
 const prefs = usePreferences()
@@ -20,7 +22,7 @@ const svg = computed(() => !mounted.value ? '' :
   renderWeek(props.art ?? prefs.art.value, props.days, {
     seed: props.seed,
     title: props.title,
-    night: props.night ?? prefs.night.value
+    night: props.theme ? props.theme === 'night' : prefs.night.value
   })
 )
 </script>

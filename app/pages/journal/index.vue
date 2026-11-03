@@ -112,4 +112,11 @@ const weeks = computed(() => {
 .day__date { font-size: var(--bd-text-sm); color: var(--bd-ink-2); padding-inline: 4px; }
 .day__weekday { font-weight: 500; color: var(--bd-ink); }
 .day__summary { font-size: var(--bd-text-sm); line-height: 1.4; color: var(--bd-ink-2); padding-inline: 4px; }
+@media (max-width: 480px) {
+  /* two mornings per row on phones, with the week's galaxy full width above */
+  .week__days { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bd-space-3); }
+  .week__galaxy { max-width: none; }
+  .day { padding: 4px; }
+  .day__summary { font-size: 13px; }
+}
 </style>

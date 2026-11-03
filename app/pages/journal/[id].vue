@@ -135,6 +135,10 @@ async function remove() {
 .entry__back { font-size: var(--bd-text-sm); color: var(--bd-ink-2); text-decoration: none; padding-block: 10px; align-self: flex-start; }
 
 .entry__grid { display: flex; flex-wrap: wrap; gap: var(--bd-space-8); align-items: flex-start; }
+@media (max-width: 719px) {
+  .entry__grid { gap: var(--bd-space-6); }
+  .entry__sky { max-width: none; }
+}
 .entry__sky { flex: 1 1 300px; max-width: 420px; display: flex; flex-direction: column; gap: var(--bd-space-6); }
 .entry__sky > .cosmos { border-radius: var(--bd-radius-lg); box-shadow: var(--bd-shadow-card); overflow: hidden; }
 .entry__links { display: flex; flex-direction: column; gap: var(--bd-space-2); }

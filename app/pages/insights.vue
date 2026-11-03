@@ -78,7 +78,7 @@ const galleryWeeks = computed(() => (data.value?.weeks ?? []).filter((w) => w.en
 
       <section class="block" aria-labelledby="trend-title">
         <h2 id="trend-title" class="block__title">Light and <span class="bd-serif-italic">heavy</span></h2>
-        <p class="bd-muted block__lede">How each morning felt overall. Each dot is colored by its leading feeling; hover or tab to a dot to see it, or select it to open the entry.</p>
+        <p class="bd-muted block__lede">How each morning felt overall. Each dot is colored by its leading feeling.</p>
         <div class="bd-card"><InsightsTrend :points="data.timeline!" /></div>
       </section>
 
