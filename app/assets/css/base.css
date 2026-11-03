@@ -1,0 +1,142 @@
+/* Brain Dump — base styles and a few shared utility classes. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bd-ground);
+  color: var(--bd-ink);
+  font-family: var(--bd-font-sans);
+  font-size: var(--bd-text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; }
+p { margin: 0; }
+img, svg { display: block; max-width: 100%; }
+
+a { color: var(--bd-ink); text-underline-offset: 3px; }
+a:hover { color: var(--bd-ink-2); }
+
+:focus-visible {
+  outline: 2px solid var(--bd-cobalt);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection { background: color-mix(in srgb, var(--bd-saffron) 45%, transparent); }
+
+/* ---- Layout ---- */
+.bd-container {
+  width: 100%;
+  max-width: calc(var(--bd-max-width) + var(--bd-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--bd-gutter);
+}
+
+/* ---- Type helpers ---- */
+.bd-display {
+  font-size: var(--bd-text-display);
+  font-weight: 300;
+  line-height: 0.98;
+  letter-spacing: var(--bd-tracking-display);
+}
+
+.bd-serif {
+  font-family: var(--bd-font-serif);
+  font-variation-settings: var(--bd-serif-soft);
+}
+
+.bd-serif-italic {
+  font-family: var(--bd-font-serif);
+  font-variation-settings: var(--bd-serif-soft);
+  font-style: italic;
+  letter-spacing: -0.02em;
+}
+
+.bd-label {
+  font-size: 12px;
+  letter-spacing: var(--bd-tracking-label);
+  text-transform: uppercase;
+  color: var(--bd-ink-3);
+}
+
+.bd-muted { color: var(--bd-ink-2); }
+
+/* ---- Surfaces ---- */
+.bd-card {
+  background: var(--bd-surface);
+  border-radius: var(--bd-radius-lg);
+  box-shadow: var(--bd-shadow-card);
+  padding: var(--bd-space-6) var(--bd-space-6);
+}
+
+/* ---- Buttons ---- */
+.bd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-2);
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: var(--bd-radius-pill);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: var(--bd-text-md);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--bd-duration) var(--bd-ease),
+              box-shadow var(--bd-duration) var(--bd-ease),
+              background var(--bd-duration) var(--bd-ease);
+}
+.bd-btn:active { transform: translateY(1px); }
+
+.bd-btn--danger {
+  background: var(--bd-terracotta-dark);
+  color: var(--bd-surface);
+}
+.bd-btn--danger:hover { color: var(--bd-surface); filter: brightness(1.1); }
+
+.bd-btn--primary {
+  background: var(--bd-ink);
+  color: var(--bd-surface);
+  box-shadow: var(--bd-shadow-button);
+}
+.bd-btn--primary:hover { color: var(--bd-surface); background: var(--bd-ink-2); }
+
+.bd-btn--outline {
+  background: var(--bd-surface);
+  color: var(--bd-ink);
+  border-color: var(--bd-line-strong);
+}
+.bd-btn--outline:hover { border-color: var(--bd-ink-3); }
+
+.bd-btn--small { min-height: 44px; padding: 0 18px; font-size: var(--bd-text-sm); }
+
+.bd-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+/* ---- Forms ---- */
+.bd-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid var(--bd-line-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-ink);
+  font: inherit;
+}
+.bd-input:focus { outline: none; border-color: var(--bd-ink-3); box-shadow: 0 0 0 4px var(--bd-line); }
+
+.bd-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

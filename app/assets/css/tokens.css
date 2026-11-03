@@ -1,0 +1,120 @@
+/*
+ * Brain Dump — design tokens (Direction E · "Dawn Orbit")
+ * Source of truth for color, type, spacing, radius and shadow.
+ * Change values here and the whole site follows. See /styleguide.
+ */
+:root {
+  /* ---- Ground & ink ---- */
+  --bd-ground: #FAF9F7;        /* "Chalk" page background */
+  --bd-surface: #FFFFFF;       /* cards, inputs */
+  --bd-ink: #221D1A;           /* primary text, buttons, horizon line */
+  --bd-ink-2: #55504B;         /* secondary text */
+  --bd-ink-3: #6B645D;         /* muted text, labels (passes 4.5:1 on ground) */
+  --bd-line: #ECE8E2;          /* hairlines, orbit rings */
+  --bd-line-strong: #E4E0DA;   /* outlined button borders */
+
+  /* ---- Planet palette: lit side / shadow side ---- */
+  --bd-terracotta: #E2614A;  --bd-terracotta-dark: #B8432F;
+  --bd-marigold:   #F2A93B;  --bd-marigold-dark:   #CC8418;
+  --bd-saffron:    #F6CF4A;  --bd-saffron-dark:    #D6A91E;
+  --bd-teal:       #1FA39B;  --bd-teal-dark:       #127B75;
+  --bd-cobalt:     #2F5BEA;  --bd-cobalt-dark:     #1E3FB5;
+  --bd-plum:       #8A4FBF;  --bd-plum-dark:       #673495;
+  --bd-magenta:    #D94F8C;  --bd-magenta-dark:    #AE3369;
+
+  /* Sunrise accent (used sparingly: date glyph, logo arc) */
+  --bd-sunrise: var(--bd-marigold);
+
+  /* ---- Type ---- */
+  --bd-font-sans: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bd-font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --bd-serif-soft: 'SOFT' 100;  /* use with font-variation-settings */
+
+  --bd-text-xs: 0.8125rem;   /* 13px */
+  --bd-text-sm: 0.9375rem;   /* 15px */
+  --bd-text-md: 1rem;        /* 16px */
+  --bd-text-lg: 1.125rem;    /* 18px */
+  --bd-text-xl: 1.25rem;     /* 20px — writing */
+  --bd-text-2xl: 1.875rem;   /* 30px */
+  --bd-text-3xl: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+  --bd-text-display: clamp(3rem, 6vw + 1rem, 4.75rem);
+
+  --bd-tracking-display: -0.045em;
+  --bd-tracking-label: 0.12em;
+
+  /* ---- Space (4px base) ---- */
+  --bd-space-1: 4px;
+  --bd-space-2: 8px;
+  --bd-space-3: 12px;
+  --bd-space-4: 16px;
+  --bd-space-5: 24px;
+  --bd-space-6: 32px;
+  --bd-space-7: 48px;
+  --bd-space-8: 64px;
+  --bd-space-9: 96px;
+
+  --bd-gutter: 24px;
+  --bd-max-width: 1200px;
+
+  /* ---- Radius ---- */
+  --bd-radius-sm: 10px;
+  --bd-radius-md: 18px;
+  --bd-radius-lg: 28px;
+  --bd-radius-pill: 999px;
+
+  /* ---- Shadow ---- */
+  --bd-shadow-card: 0 1px 0 var(--bd-line), 0 28px 56px -16px rgba(34, 29, 26, 0.18);
+  --bd-shadow-soft: 0 1px 0 var(--bd-line), 0 12px 28px -12px rgba(34, 29, 26, 0.14);
+  --bd-shadow-button: 0 10px 20px -6px rgba(34, 29, 26, 0.45);
+  --bd-shadow-planet: drop-shadow(0 12px 10px rgba(34, 29, 26, 0.14));
+  --bd-ground-shadow: rgba(34, 29, 26, 0.12);
+
+  /* ---- Motion ---- */
+  --bd-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --bd-duration: 180ms;
+
+  color-scheme: light;
+}
+
+/*
+ * Night. Applied when the reader picks Night, or picks System and their OS is dark.
+ * Planet colors stay the same; grounds, ink and shadows flip. The two "-dark"
+ * planet shades are lifted so text set in them stays readable on the dark ground.
+ */
+:root[data-theme="dark"] {
+  --bd-ground: #121018;
+  --bd-surface: #1C1922;
+  --bd-ink: #EEE8E1;
+  --bd-ink-2: #BEB7AF;
+  --bd-ink-3: #9A928A;
+  --bd-line: #2A2631;
+  --bd-line-strong: #3A3542;
+  --bd-terracotta-dark: #EC806C;
+  --bd-cobalt-dark: #93A9FF;
+  --bd-shadow-card: 0 1px 0 var(--bd-line), 0 28px 56px -16px rgba(0, 0, 0, 0.6);
+  --bd-shadow-soft: 0 1px 0 var(--bd-line), 0 12px 28px -12px rgba(0, 0, 0, 0.55);
+  --bd-shadow-button: 0 10px 20px -6px rgba(0, 0, 0, 0.6);
+  --bd-shadow-planet: drop-shadow(0 12px 10px rgba(0, 0, 0, 0.45));
+  --bd-ground-shadow: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bd-ground: #121018;
+    --bd-surface: #1C1922;
+    --bd-ink: #EEE8E1;
+    --bd-ink-2: #BEB7AF;
+    --bd-ink-3: #9A928A;
+    --bd-line: #2A2631;
+    --bd-line-strong: #3A3542;
+    --bd-terracotta-dark: #EC806C;
+    --bd-cobalt-dark: #93A9FF;
+    --bd-shadow-card: 0 1px 0 var(--bd-line), 0 28px 56px -16px rgba(0, 0, 0, 0.6);
+    --bd-shadow-soft: 0 1px 0 var(--bd-line), 0 12px 28px -12px rgba(0, 0, 0, 0.55);
+    --bd-shadow-button: 0 10px 20px -6px rgba(0, 0, 0, 0.6);
+    --bd-shadow-planet: drop-shadow(0 12px 10px rgba(0, 0, 0, 0.45));
+    --bd-ground-shadow: rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}

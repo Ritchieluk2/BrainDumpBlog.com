@@ -1,0 +1,37 @@
+// Cloudflare Workers config for production. See docs/DEPLOY.md.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "braindumpblog",
+	"main": ".output/server/index.mjs",
+	"compatibility_date": "2025-07-15",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".output/public"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "braindump",
+			// Replace with the id printed by: npx wrangler d1 create braindump
+			"database_id": "87a9b583-c2a9-4d4e-a722-4dcc18293a07"
+		},
+		{
+			"binding": "braindump",
+			"database_name": "braindump",
+			"database_id": "87a9b583-c2a9-4d4e-a722-4dcc18293a07"
+		}
+	],
+	"vars": {
+		"NUXT_PUBLIC_SITE_URL": "https://braindumpblog.com",
+		"NUXT_EMAIL_FROM": "Brain Dump <hello@braindumpblog.com>"
+	},
+	// Secrets are not stored here. Set them once with:
+	//   npx wrangler secret put NUXT_SESSION_PASSWORD
+	//   npx wrangler secret put NUXT_RESEND_API_KEY
+	"observability": {
+		"enabled": true
+	}
+}
