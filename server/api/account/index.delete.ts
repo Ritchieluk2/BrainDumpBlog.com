@@ -1,9 +1,10 @@
-/** DELETE /api/account — permanently delete your account, every entry, and every to-do/note/reminder. */
+/** DELETE /api/account — permanently delete your account, every entry, every to-do/note/reminder, and your game history. */
 export default defineEventHandler(async (event) => {
   const { user } = await requireUserSession(event)
   const db = await useDb()
   await db.sql`DELETE FROM entry_links WHERE user_id = ${user.id}`
   await db.sql`DELETE FROM items WHERE user_id = ${user.id}`
+  await db.sql`DELETE FROM game_events WHERE user_id = ${user.id}`
   await db.sql`DELETE FROM dumps WHERE user_id = ${user.id}`
   await db.sql`DELETE FROM login_tokens WHERE email = ${user.email}`
   await db.sql`DELETE FROM users WHERE id = ${user.id}`

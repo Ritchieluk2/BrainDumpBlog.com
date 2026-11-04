@@ -8,6 +8,7 @@ const tabs = [
   { to: '/', label: 'Write', match: (p: string) => p === '/' || p === '/preview' },
   { to: '/journal', label: 'Journal', match: (p: string) => p.startsWith('/journal') },
   { to: '/insights', label: 'Insights', match: (p: string) => p.startsWith('/insights') },
+  { to: '/games', label: 'Games', match: (p: string) => p.startsWith('/games') },
   { to: '/account', label: 'Account', match: (p: string) => p.startsWith('/account') || p.startsWith('/settings') }
 ] as const
 </script>
@@ -34,6 +35,13 @@ const tabs = [
           <path d="M3 17l5-6 4 3 6-8 3 3" />
           <path d="M3 21h18" />
         </template>
+        <template v-else-if="t.label === 'Games'">
+          <!-- three bodies in line: a syzygy -->
+          <path d="M7.6 15.4 9.6 13.8M14.4 10.2 16.4 8.6" />
+          <circle cx="5.5" cy="17" r="2.3" />
+          <circle cx="12" cy="12" r="3" />
+          <circle cx="18.5" cy="7" r="2.3" />
+        </template>
         <template v-else>
           <circle cx="12" cy="8.5" r="3.5" />
           <path d="M5 20c1.2-3.6 4-5.2 7-5.2s5.8 1.6 7 5.2" />
@@ -52,7 +60,7 @@ const tabs = [
   bottom: 0;
   z-index: 20;
   display: none;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
   background: color-mix(in srgb, var(--bd-surface) 92%, transparent);
   -webkit-backdrop-filter: blur(14px);

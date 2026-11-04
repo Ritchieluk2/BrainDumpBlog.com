@@ -3,6 +3,7 @@
     <BdLogo size="sm" />
     <nav aria-label="Footer" class="site-footer__nav">
       <NuxtLink to="/why">Why brain dumps?</NuxtLink>
+      <NuxtLink to="/games">Games</NuxtLink>
       <NuxtLink to="/about">About</NuxtLink>
       <NuxtLink to="/settings">Settings</NuxtLink>
       <NuxtLink to="/styleguide">Styleguide</NuxtLink>

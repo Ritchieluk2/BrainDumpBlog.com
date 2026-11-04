@@ -18,10 +18,13 @@ function toggleNight() {
       <template v-if="loggedIn">
         <NuxtLink to="/journal" class="site-header__wide">Journal</NuxtLink>
         <NuxtLink to="/insights" class="site-header__wide">Insights</NuxtLink>
+        <NuxtLink to="/games" class="site-header__wide">Games</NuxtLink>
         <NuxtLink to="/account" class="site-header__wide">Account</NuxtLink>
         <NuxtLink to="/" class="bd-btn bd-btn--primary bd-btn--small site-header__wide">Write</NuxtLink>
       </template>
-      <NuxtLink v-else to="/sign-in" class="bd-btn bd-btn--outline bd-btn--small">Sign in</NuxtLink>
+      <!-- signed out there's no tab bar, so Games stays visible on phones -->
+      <NuxtLink v-if="!loggedIn" to="/games" class="site-header__games">Games</NuxtLink>
+      <NuxtLink v-if="!loggedIn" to="/sign-in" class="bd-btn bd-btn--outline bd-btn--small">Sign in</NuxtLink>
       <button
         type="button"
         class="site-header__mode"
@@ -88,5 +91,8 @@ function toggleNight() {
   .site-header { padding-block: 16px; }
   .site-header__wide { display: none; }
   .site-header__nav { gap: var(--bd-space-3); }
+}
+@media (max-width: 379px) {
+  .site-header__games { display: none; }
 }
 </style>

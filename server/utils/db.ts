@@ -75,6 +75,24 @@ const MIGRATIONS: string[][] = [
     `ALTER TABLE users ADD COLUMN prefs TEXT`,
     `ALTER TABLE users ADD COLUMN onboarded_at INTEGER`,
     `UPDATE users SET onboarded_at = created_at`
+  ],
+  // 5: finished games from /games (Syzygy), for game balance and analytics.
+  // Signed-out players are counted by an anonymous id kept in their browser.
+  [
+    `CREATE TABLE IF NOT EXISTS game_events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      anon_id TEXT,
+      mode TEXT NOT NULL,
+      day TEXT NOT NULL,
+      ver TEXT,
+      created_at INTEGER NOT NULL,
+      data TEXT NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS game_events_user_idx ON game_events (user_id, created_at)`,
+    `CREATE INDEX IF NOT EXISTS game_events_anon_idx ON game_events (anon_id)`,
+    `CREATE INDEX IF NOT EXISTS game_events_mode_idx ON game_events (mode, day)`,
+    `CREATE INDEX IF NOT EXISTS game_events_time_idx ON game_events (created_at)`
   ]
 ]
 

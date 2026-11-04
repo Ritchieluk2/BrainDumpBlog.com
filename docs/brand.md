@@ -23,9 +23,24 @@ Refined and simple. A sparse, elegant layout on a near-white ground, with bold, 
 - **Fraunces** with the Soft axis for the user's writing, and in italic for accent words ("Empty your *head.*")
 
 ## Logo
-A terracotta planet rising over an ink horizon line, with a faint marigold sunrise arc and a small cobalt moon. The wordmark is "brain" in Outfit and "dump" in Fraunces italic.
+A sleepy brain rising over an ink horizon line. The wordmark is "brain" in Outfit and "dump" in Fraunces italic.
+
+The mark changes with the reader's local time ("a day in the brain"):
+
+| Scene | Shown | Brain | Props |
+| --- | --- | --- | --- |
+| morning, sleepy sunrise | 6:00 to 11:00 | blue | sunrise arc, a cloud, z's |
+| noon, sun-shower | 11:00 to 17:00 | pink | sun, rainbow rain |
+| evening, pink dusk | 17:00 to 21:00 | coral | dusk arc, birds, reflection |
+| night, moonlit sleep | 21:00 to 6:00 | lavender | moon, stars, z's |
+
+- The browser picks the scene and checks it once a minute. The server reuses the last scene this browser saw (the `bd-scene` cookie), so a reload doesn't flash. A first visit starts on morning.
+- The favicon and the iPhone home-screen icon follow the same scene. The home-screen icon is fixed at whatever scene it was saved in, and the web app manifest uses morning.
+- Artwork: `app/assets/logos/` (the inline marks, so the horizon follows night mode) and `public/brand/` (icons).
 
 ## Mood icons
+These are the defaults. Each person can change any feeling's color and shape in Settings (`shared/utils/moods.ts`).
+
 | Mood | Shape | Color |
 | --- | --- | --- |
 | joyful | star | saffron |
@@ -34,7 +49,7 @@ A terracotta planet rising over an ink horizon line, with a faint marigold sunri
 | focused | triangle | marigold |
 | tired | crescent | plum |
 | hopeful | rounded square | teal |
-| tender | sphere | magenta |
+| tender | drop | magenta |
 
 ## Planets as entries
 Each brain dump becomes a planet. Size reflects word count, color reflects the strongest feeling, a moon shows the second-strongest feeling, and a ring marks anxiety. A week of dumps orbit together as a small solar system.

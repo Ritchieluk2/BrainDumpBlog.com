@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MOODS, PLANET_COLORS, type Mood, type PlanetColor } from '#shared/utils/moods'
 import { demoWeek } from '~/data/sampleDumps'
+import { SKY_SCENES } from '#shared/utils/sky-scene'
 
 useHead({ title: 'Styleguide' })
 
@@ -33,6 +34,13 @@ const neutrals = [
         <div class="sg__tile"><BdLogo /></div>
         <div class="sg__tile"><BdLogo size="sm" /></div>
         <div class="sg__tile"><BdLogo mark-only /></div>
+      </div>
+      <p class="bd-muted sg__note">The mark follows the reader's local time. Right now it shows the current scene; here are all four.</p>
+      <div class="sg__row">
+        <div v-for="s in SKY_SCENES" :key="s.id" class="sg__tile sg__scene">
+          <BdLogo mark-only size="lg" :scene="s.id" />
+          <code>{{ s.id }} · {{ s.label }} · from {{ s.from }}</code>
+        </div>
       </div>
     </section>
 
@@ -140,6 +148,8 @@ const neutrals = [
 .sg__type { display: flex; flex-direction: column; gap: var(--bd-space-4); }
 .sg__input { display: flex; flex-direction: column; gap: 6px; max-width: 360px; font-size: var(--bd-text-sm); }
 code { font-size: 12px; color: var(--bd-ink-3); }
+.sg__note { font-size: var(--bd-text-sm); margin-top: var(--bd-space-3); }
+.sg__scene { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .sg__cosmos { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--bd-space-4); }
 .sg__day { margin: 0; }
 .sg__day .cosmos, .sg__galaxy .cosmos { border-radius: 22px; box-shadow: var(--bd-shadow-soft); }

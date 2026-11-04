@@ -24,6 +24,8 @@ export default defineNuxtConfig({
     // Server-only. Override with NUXT_RESEND_API_KEY / NUXT_EMAIL_FROM in .env
     resendApiKey: '',
     emailFrom: 'Brain Dump <onboarding@resend.dev>',
+    // Comma-separated emails that see everyone's game stats on /games/syzygy. Set NUXT_ADMIN_EMAILS.
+    adminEmails: '',
     session: {
       maxAge: 60 * 60 * 24 * 30 // stay signed in for 30 days
     },
@@ -67,8 +69,7 @@ export default defineNuxtConfig({
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        // The icon and apple-touch-icon follow the time of day; app.vue sets them.
         { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },

@@ -1,6 +1,14 @@
 # Roadmap & review list
 
-_Last updated: Nov 3, 2026_
+_Last updated: Nov 4, 2026_
+
+## Shipped Nov 4: Games (needs your review)
+- **Syzygy** at `/games/syzygy/`, plus a `/games` landing page with a thumbnail card. Games is in the header, in the phone tab bar for signed-in users (now five tabs), and in the footer. Details in `docs/GAMES.md`.
+- **Game logging:** each finished game is saved to the new `game_events` table (migration 5), signed in or not. `GET /api/games/stats` shows your games, or everyone's for `NUXT_ADMIN_EMAILS`.
+- **Account export and delete** now include game history.
+- **To do:**
+  - Set `NUXT_ADMIN_EMAILS`.
+  - Mention game results in the privacy policy.
 
 ## Shipped Nov 3: your colors, your shapes, and a welcome (needs your review)
 

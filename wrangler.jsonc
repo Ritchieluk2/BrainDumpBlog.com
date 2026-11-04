@@ -25,7 +25,8 @@
 		}
 	],
 	"vars": {
-		"NUXT_PUBLIC_SITE_URL": "https://braindumpblog.com",
+		// The address sign-in links point to. Change this when the custom domain goes live.
+		"NUXT_PUBLIC_SITE_URL": "https://braindumpblog.ritchieluk.workers.dev",
 		"NUXT_EMAIL_FROM": "Brain Dump <hello@braindumpblog.com>"
 	},
 	// Secrets are not stored here. Set them once with:
