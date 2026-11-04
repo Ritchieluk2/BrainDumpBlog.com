@@ -8,6 +8,10 @@ const tabs = computed(() => loggedIn.value && route.path !== '/welcome')
 <template>
   <div class="layout" :class="{ 'has-tabbar': tabs }">
     <a href="#main" class="skip-link">Skip to content</a>
+    <p class="wip-banner" role="note">
+      <span class="wip-banner__tag">Work in progress</span>
+      <span>A demo in development, made with AI assistance.</span>
+    </p>
     <SiteHeader />
     <main id="main" class="layout__main">
       <slot />
@@ -23,6 +27,28 @@ const tabs = computed(() => loggedIn.value && route.path !== '/welcome')
 /* leave room for the phone tab bar (and the iPhone home indicator) */
 @media (max-width: 719px) {
   .layout.has-tabbar { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+}
+/* thin notice above the header; the top padding clears an iPhone notch (viewport-fit=cover) */
+.wip-banner {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 10px;
+  padding: calc(6px + env(safe-area-inset-top)) var(--bd-gutter) 6px;
+  background: var(--bd-ink);
+  color: var(--bd-ground);
+  font-size: 12.5px;
+  line-height: 1.35;
+  text-align: center;
+}
+.wip-banner__tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: var(--bd-tracking-label);
+  text-transform: uppercase;
+  color: var(--bd-sunrise);
 }
 .skip-link {
   position: absolute;
